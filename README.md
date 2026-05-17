@@ -16,6 +16,10 @@ entry includes:
 - an inline SHA-256 checksum
 - a `checksums.txt` release asset for operators who want to verify downloads
 
+## Operator Docs
+
+- [Plugin communication map](docs/plugin-communication-map.md)
+
 ## Included Plugins
 
 - `continuum.annas-archive-downloader`
