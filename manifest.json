@@ -1,0 +1,3431 @@
+{
+  "plugins": [
+    {
+      "manifest": {
+        "plugin_id": "continuum.annas-archive-downloader",
+        "version": "0.1.0",
+        "checksum": "884ef31571c550facbac81afca8f62e8039ff0d3f5ae0c729be53f859e275392",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "backend",
+            "display_name": "Anna's Archive Downloader API",
+            "description": "Download-provider API for Anna's Archive style search, fetch, and request forwarding."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "request_handler",
+            "display_name": "Request handler",
+            "description": "Forwards ebook request_submitted events to Anna's Archive download jobs.",
+            "subscriptions": [
+              "plugin.continuum.ebooks.request_submitted"
+            ]
+          },
+          {
+            "type": "ebook_backend.v1",
+            "id": "default",
+            "display_name": "Anna's Archive Downloader",
+            "description": "Request/download provider backed by an Anna's Archive download service; not a presentation library source.",
+            "metadata": {
+              "ebook_roles": [
+                "download_provider"
+              ],
+              "supports_catalog": false,
+              "supports_requests": true,
+              "supports_auto_monitoring": false
+            }
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "reconciler",
+            "display_name": "Reconcile Anna's Archive download status",
+            "description": "Polls the upstream Anna's Archive download service for status changes on non-terminal downloads.",
+            "cron": "*/1 * * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated Anna's Archive downloader schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "base_url",
+            "title": "Anna's Archive downloader base URL",
+            "description": "Base URL for the upstream downloader service, e.g. https://downloads.example.com (no trailing slash).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "api_key",
+            "title": "Downloader API key",
+            "description": "X-API-Key header for upstream calls.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "default_cover_size",
+            "title": "Default cover size",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Cover size",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "external_source_priority",
+            "title": "External source priority (ordered list)",
+            "description": "JSON array \u2014 ordered indexer list passed to the upstream downloader external_search endpoint.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Priority list (JSON array)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-annas-archive-downloader",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-annas-archive-downloader",
+          "checksum": "884ef31571c550facbac81afca8f62e8039ff0d3f5ae0c729be53f859e275392"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.arrouter",
+        "version": "0.1.0",
+        "checksum": "fe49750c7ca14730d92e5b2167cdc56bb529989c0fa8e674d0b8963d0da6ee86",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "event_consumer.v1",
+            "id": "router",
+            "display_name": "Router",
+            "description": "Routes request events to a registered Radarr/Sonarr based on rules.",
+            "subscriptions": [
+              "plugin.continuum.requests.submitted",
+              "plugin.continuum.requests.cancelled"
+            ]
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "poll",
+            "display_name": "Poll *arrs",
+            "description": "Polls registered *arrs for download/import progress."
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "admin",
+            "display_name": "Arr Request Router Admin",
+            "description": "Admin SPA for the Arr Request Router plugin."
+          },
+          {
+            "type": "request_router.v1",
+            "id": "default",
+            "display_name": "Rule-based Arr request router",
+            "description": "Routes requests to one of N registered Radarr/Sonarr instances based on rules."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "spa",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Request Routing",
+            "navigation_kind": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated arrouter schema (e.g. postgres://plugin_arrouter:...@host:5432/continuum?search_path=arrouter&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "tmdb.api_key",
+            "title": "TMDB API key",
+            "description": "TMDB v3 API key. Used for rule enrichment (genres, keywords, content rating, etc.).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API Key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "tmdb.language",
+            "title": "TMDB language",
+            "description": "TMDB language query param for enrichment lookups. Defaults to en-US.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Language (e.g. en-US)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "poll_interval_seconds",
+            "title": "Poll interval (seconds)",
+            "description": "How often the poll loop checks each registered *arr. Minimum 10, maximum 600. Defaults to 30.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":10,\"maximum\":600}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Poll interval (seconds, 10\u2013600)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "stale_after_hours",
+            "title": "Stale after (hours)",
+            "description": "Mark requests stuck in submitted/downloading as failed after this many hours. Defaults to 72.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":1}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Mark failed after (hours)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "secret_key",
+            "title": "Secret encryption key",
+            "description": "Symmetric key (any non-empty string) used to encrypt registered_arr.api_key at rest. Rotating this key invalidates all stored API keys.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"minLength\":16}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Encryption key (min 16 chars)",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-arr-request-router",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-arr-request-router",
+          "checksum": "fe49750c7ca14730d92e5b2167cdc56bb529989c0fa8e674d0b8963d0da6ee86"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.arrproxy",
+        "version": "0.1.0",
+        "checksum": "daaf94dc645bcecb96ec316451d2de8857a2e34123b64eb3a432b42b2f1da4e7",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "event_consumer.v1",
+            "id": "request-router",
+            "display_name": "Request router",
+            "description": "Forwards continuum.requests submissions and cancellations to the Arr Proxy backend (movies \u2192 Radarr, TV \u2192 Sonarr).",
+            "subscriptions": [
+              "plugin.continuum.requests.submitted",
+              "plugin.continuum.requests.cancelled"
+            ]
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "poll",
+            "display_name": "Poll *arr",
+            "description": "Polls Radarr/Sonarr for download/import status and publishes transitions."
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "admin",
+            "display_name": "Arr Proxy Admin",
+            "description": "Read-only status board with retry for failed submissions."
+          },
+          {
+            "type": "request_router.v1",
+            "id": "default",
+            "display_name": "Arr Proxy forwarder",
+            "description": "Forwards approved requests to a single Arr Proxy backend that fronts both Radarr (movies) and Sonarr (TV) via path-routing."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "spa",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Arr Proxy",
+            "navigation_kind": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated arrproxy schema (e.g. postgres://plugin_arrproxy:...@host:5432/continuum?search_path=arrproxy&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "base_url",
+            "title": "Arr Proxy base URL",
+            "description": "The single backend URL fronting both Radarr and Sonarr via path-routing (e.g. http://arrproxy:9696). arrproxy appends /radarr/api/v3/... and /sonarr/api/v3/... internally.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "api_key",
+            "title": "API key",
+            "description": "Shared API key for the Arr Proxy backend.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API Key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "movies_path",
+            "title": "Movies root folder",
+            "description": "Radarr-side root folder path (e.g. /movies).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Movies path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "tv_path",
+            "title": "TV root folder",
+            "description": "Sonarr-side root folder path (e.g. /tv).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "TV path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "quality_profile_id",
+            "title": "Quality profile ID",
+            "description": "Quality profile ID for both Radarr and Sonarr (blank = first available).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Quality profile ID",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "language_profile_id",
+            "title": "Language profile ID (Sonarr only)",
+            "description": "Sonarr-only; blank = first available.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Language profile ID",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "polling",
+            "title": "Polling",
+            "description": "How often to poll *arr and when to give up on stuck submissions.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"interval_seconds\":{\"type\":\"integer\"},\"stale_after_hours\":{\"type\":\"integer\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "interval_seconds",
+                  "label": "Poll interval (seconds, 10\u2013600)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "stale_after_hours",
+                  "label": "Mark failed after (hours)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-arr-proxy",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-arr-proxy",
+          "checksum": "daaf94dc645bcecb96ec316451d2de8857a2e34123b64eb3a432b42b2f1da4e7"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.audiobookbay-requests",
+        "version": "0.1.0",
+        "checksum": "25872ec00c55c9b1e8ebc90f5b7b01a22ee5a157c7cfb52fb228ead0a9e1478d",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "backend",
+            "display_name": "AudiobookBay Requests API",
+            "description": "Request-provider API for scored AudiobookBay search, magnet resolution, diagnostics, and optional qBittorrent enqueueing."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "request_handler",
+            "display_name": "Audiobook request handler",
+            "description": "Forwards audiobook request_submitted events to AudiobookBay search and the configured download mode.",
+            "subscriptions": [
+              "plugin.continuum.audiobooks.request_submitted"
+            ]
+          },
+          {
+            "type": "audiobook_backend.v1",
+            "id": "default",
+            "display_name": "AudiobookBay Requests",
+            "description": "Scraper-based audiobook request provider backed by AudiobookBay with optional qBittorrent enqueueing; not a presentation library source.",
+            "metadata": {
+              "audiobook_roles": [
+                "request_provider"
+              ],
+              "supports_catalog": false,
+              "supports_requests": true,
+              "supports_auto_monitoring": false
+            }
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "reconciler",
+            "display_name": "Reconcile AudiobookBay request status",
+            "description": "Polls embedded/qBittorrent download status for non-terminal audiobook requests.",
+            "cron": "*/1 * * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated AudiobookBay requests schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "base_url",
+            "title": "AudiobookBay base URL",
+            "description": "AudiobookBay base URL, e.g. https://audiobookbay.lu (no trailing slash).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "download_mode",
+            "title": "Download mode",
+            "description": "One of scrape_only, qbittorrent, or embedded. Defaults to qbittorrent when qBittorrent URL is set, otherwise scrape_only.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"enum\":[\"scrape_only\",\"qbittorrent\",\"embedded\"]}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Mode",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "qbittorrent_url",
+            "title": "qBittorrent Web UI URL",
+            "description": "Optional base URL for qBittorrent Web API, e.g. http://qbittorrent:8080. Leave blank for scrape-only magnet resolution.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "qbittorrent_username",
+            "title": "qBittorrent username",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Username",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "qbittorrent_password",
+            "title": "qBittorrent password",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Password",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "qbittorrent_category",
+            "title": "qBittorrent category",
+            "description": "Optional category assigned to enqueued audiobook torrents.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Category",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "qbittorrent_save_path",
+            "title": "qBittorrent save path",
+            "description": "Optional save path sent to qBittorrent for new audiobook requests.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Save path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "embedded_download_dir",
+            "title": "Embedded download directory",
+            "description": "Required when download_mode is embedded. Completed torrent files are written here.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Download directory",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "embedded_listen_port",
+            "title": "Embedded torrent listen port",
+            "description": "Optional BitTorrent listen port for embedded mode. Leave blank/0 for a random port.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"number\",\"minimum\":0,\"maximum\":65535}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen port",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "trackers",
+            "title": "Fallback trackers",
+            "description": "JSON array of trackers used when AudiobookBay exposes an info hash without a full magnet URI.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Trackers (JSON array)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "search_limit",
+            "title": "Search result limit",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"number\",\"minimum\":1,\"maximum\":50}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Limit",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-audiobookbay-requests",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-audiobookbay-requests",
+          "checksum": "25872ec00c55c9b1e8ebc90f5b7b01a22ee5a157c7cfb52fb228ead0a9e1478d"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.audiobooks",
+        "version": "0.1.0",
+        "checksum": "a524701b8b149e78e1e2afaaf083b890b640785097dfa626bfe62d40425889e5",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "portal",
+            "display_name": "Audiobooks",
+            "description": "Customer-facing audiobook browser, player, request flow, and ABS-mobile API."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "status_watcher",
+            "display_name": "Backend status watcher",
+            "description": "Tracks request fulfillment and import status from configured audiobook backends.",
+            "subscriptions": [
+              "plugin.continuum.bookwarehouse-audio.request_acknowledged",
+              "plugin.continuum.bookwarehouse-audio.request_status_changed",
+              "plugin.continuum.bookwarehouse-audio.request_fulfilled",
+              "plugin.continuum.bookwarehouse-audio.request_failed",
+              "plugin.continuum.bookwarehouse-audio.audiobook_imported",
+              "plugin.continuum.bookwarehouse-audio.audiobook_failed"
+            ]
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "request_reconciler",
+            "display_name": "Audiobook request reconciler",
+            "description": "Polls backend for missed status events; closes idle ABS sessions; LRU-evicts cached audio."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "abs_public",
+            "method": "GET",
+            "path": "/abs/public/*",
+            "access": "public"
+          },
+          {
+            "id": "abs_login",
+            "method": "POST",
+            "path": "/abs/api/login",
+            "access": "public"
+          },
+          {
+            "id": "abs_refresh",
+            "method": "POST",
+            "path": "/abs/api/auth/refresh",
+            "access": "public"
+          },
+          {
+            "id": "abs_ping",
+            "method": "GET",
+            "path": "/abs/api/ping",
+            "access": "public"
+          },
+          {
+            "id": "abs",
+            "method": "*",
+            "path": "/abs/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "spa",
+            "method": "GET",
+            "path": "/*",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "Audiobooks",
+            "navigation_kind": "user"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated audiobooks schema (e.g. postgres://plugin_audiobooks:...@host:5432/continuum?search_path=audiobooks&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "standalone_http_listen",
+            "title": "Standalone HTTP listen address",
+            "description": "Optional. When set (e.g. ':7878' or '127.0.0.1:7878'), the plugin serves its HTTP routes directly on this address so operators can reverse-proxy a hostname (e.g. abs.example.com) to it. Protected SPA routes still require a Continuum session and will 401 here; public client-app routes (ABS API, /ping, /login) work normally. Changing this value requires a plugin restart. Leave empty to disable.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen address",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "cdn_hostname",
+            "title": "Audiobooks CDN hostname",
+            "description": "Optional. When set together with cdn_signing_secret, the portal emits presigned-URL track URLs pointing at this hostname (e.g. 'audiobooks-cdn.example.com'). The hostname must reverse-proxy to the local audiobooks plugin's standalone HTTP listener. Leave both unset to keep the current proxy-through-portal behavior.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "CDN hostname",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "cdn_signing_secret",
+            "title": "Audiobooks CDN signing secret",
+            "description": "32-byte base64-encoded HMAC secret shared with the local audiobooks plugin's stream_signing_secret. The same value goes in both plugins. Click 'Generate' in the admin UI to create a new one. The portal stores this in plain form (it needs the plaintext to sign JWTs); rotate by regenerating and updating both plugins.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Base64 secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-audiobooks",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-audiobooks",
+          "checksum": "a524701b8b149e78e1e2afaaf083b890b640785097dfa626bfe62d40425889e5"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.bookwarehouse-audio",
+        "version": "0.1.0",
+        "checksum": "79a497bae630ab0f701522dbc31d64932ed3589c63b0994df31b4956e15ece30",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "backend",
+            "display_name": "BookWarehouse audio backend",
+            "description": "Catalog, streaming, and request forwarding to a BookWarehouse instance."
+          },
+          {
+            "type": "audiobook_backend.v1",
+            "id": "default",
+            "display_name": "Book Warehouse Audio",
+            "description": "Catalog, cover, streaming, and request source for the Audiobooks portal."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "request_handler",
+            "display_name": "Request handler",
+            "description": "Forwards audiobook request_submitted events to BookWarehouse monitoring.",
+            "subscriptions": [
+              "plugin.continuum.audiobooks.request_submitted"
+            ]
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated bookwarehouse_audio schema (e.g. postgres://plugin_bookwarehouse_audio:...@host:5432/continuum?search_path=bookwarehouse_audio&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "base_url",
+            "title": "BookWarehouse base URL",
+            "description": "e.g. https://bookwarehouse.example.com (no trailing slash).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "api_key",
+            "title": "BookWarehouse API key",
+            "description": "X-API-Key header for upstream calls.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "default_cover_size",
+            "title": "Default cover size",
+            "description": "One of small|medium|large|original. Defaults to large.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Cover size",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "request_quality_profile",
+            "title": "Request quality profile",
+            "description": "BookWarehouse-side quality tier for new requests; leave blank for default.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Profile",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "direct_file_access",
+            "title": "Direct local file streaming",
+            "description": "When enabled, stream audiobook files from local filesystem mounts using path remapping before falling back to Book Warehouse redirects.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\",\"default\":false}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable direct file streaming",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "path_remappings",
+            "title": "Audiobook path remappings",
+            "description": "JSON array mapping Book Warehouse paths to paths mounted inside Continuum, e.g. [{\"source_path\":\"/media/books\",\"target_path\":\"/mnt/books\"}]. First matching rule wins.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"source_path\":{\"type\":\"string\"},\"target_path\":{\"type\":\"string\"}},\"required\":[\"source_path\",\"target_path\"]},\"default\":[]}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "JSON remapping array",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-bookwarehouse-audio",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-bookwarehouse-audio",
+          "checksum": "79a497bae630ab0f701522dbc31d64932ed3589c63b0994df31b4956e15ece30"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.bookwarehouse-ebook",
+        "version": "0.1.0",
+        "checksum": "058d5be0c0a3bbdcc2b6610f2d8e8cdccbc3319004b58ef7bf01cea812753608",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "backend",
+            "display_name": "Book Warehouse ebook backend",
+            "description": "Calibre-backed ebook source: catalog, file streaming, request forwarding."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "request_handler",
+            "display_name": "Request handler",
+            "description": "Forwards ebook request_submitted events to Book Warehouse monitoring.",
+            "subscriptions": [
+              "plugin.continuum.ebooks.request_submitted"
+            ]
+          },
+          {
+            "type": "ebook_backend.v1",
+            "id": "default",
+            "display_name": "Book Warehouse (Calibre)",
+            "description": "Owned-library ebook source backed by an external Book Warehouse instance.",
+            "metadata": {
+              "ebook_roles": [
+                "library_source",
+                "download_provider"
+              ],
+              "supports_catalog": true,
+              "supports_requests": true,
+              "supports_auto_monitoring": true
+            }
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "reconciler",
+            "display_name": "Reconcile Book Warehouse request status",
+            "description": "Polls upstream Book Warehouse for status changes on non-terminal requests.",
+            "cron": "*/1 * * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated bookwarehouse_ebook schema (e.g. postgres://plugin_bookwarehouse_ebook:...@host:5432/continuum?search_path=bookwarehouse_ebook&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "base_url",
+            "title": "Book Warehouse base URL",
+            "description": "e.g. https://bookwarehouse.example.com (no trailing slash).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "api_key",
+            "title": "Book Warehouse API key",
+            "description": "X-API-Key header for upstream calls.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "default_cover_size",
+            "title": "Default cover size",
+            "description": "One of small|medium|large|original. Defaults to large.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Cover size",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "request_quality_profile",
+            "title": "Request quality profile",
+            "description": "BookWarehouse-side quality tier for new requests.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Profile",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "enable_auto_monitoring",
+            "title": "Enable auto-monitoring",
+            "description": "Allow Sonarr-style auto-monitoring for new requests (book is searched until found).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Auto-monitor new requests",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-bookwarehouse-ebook",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-bookwarehouse-ebook",
+          "checksum": "058d5be0c0a3bbdcc2b6610f2d8e8cdccbc3319004b58ef7bf01cea812753608"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.ebooks",
+        "version": "0.1.0",
+        "checksum": "3dc996496ff06f85ba1ba7cdfdba922d44915e68cb5fa7ae65a60cdc6fdb784f",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "spa",
+            "display_name": "Ebooks portal",
+            "description": "Customer-facing ebooks portal: SPA + OPDS + KOReader kosync + Kobo + Kindle send + admin."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "request_watcher",
+            "display_name": "Watch backend request events",
+            "subscriptions": [
+              "plugin.continuum.annas-archive-downloader.request_acknowledged",
+              "plugin.continuum.annas-archive-downloader.request_failed",
+              "plugin.continuum.annas-archive-downloader.request_status_changed",
+              "plugin.continuum.annas-archive-downloader.request_fulfilled",
+              "plugin.continuum.bookwarehouse-ebook.request_acknowledged",
+              "plugin.continuum.bookwarehouse-ebook.request_failed",
+              "plugin.continuum.bookwarehouse-ebook.request_status_changed",
+              "plugin.continuum.bookwarehouse-ebook.request_fulfilled"
+            ]
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "request_reconciler",
+            "display_name": "Reconcile ebook requests",
+            "cron": "*/1 * * * *"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "cache_evictor",
+            "display_name": "Evict LRU cached ebook files",
+            "cron": "*/5 * * * *"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "kobo_session_reaper",
+            "display_name": "Expire stale Kobo transfer sessions",
+            "cron": "*/5 * * * *"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "opds_token_pruner",
+            "display_name": "Prune revoked OPDS tokens",
+            "cron": "0 3 * * *"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "kindle_send_retrier",
+            "display_name": "Retry queued Kindle sends",
+            "cron": "*/2 * * * *"
+          },
+          {
+            "type": "request_router.v1",
+            "id": "ebooks",
+            "display_name": "Route ebook requests"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "admin_assets",
+            "method": "GET",
+            "path": "/admin/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "index",
+            "method": "GET",
+            "path": "/",
+            "access": "public"
+          },
+          {
+            "id": "opds",
+            "method": "*",
+            "path": "/opds/*",
+            "access": "public"
+          },
+          {
+            "id": "kosync",
+            "method": "*",
+            "path": "/kosync/*",
+            "access": "public"
+          },
+          {
+            "id": "kobo",
+            "method": "*",
+            "path": "/kobo/*",
+            "access": "public"
+          },
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "admin",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Ebooks",
+            "navigation_kind": "admin"
+          },
+          {
+            "id": "app",
+            "method": "GET",
+            "path": "/*",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "Ebooks",
+            "navigation_kind": "user"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated ebooks schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "cache_dir",
+            "title": "Cache directory",
+            "description": "Local directory for ebook file cache.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "cache_max_size_gb",
+            "title": "Max cache size (GB)",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":1}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "GB",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "cache_download_concurrency",
+            "title": "Download concurrency",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":1}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Workers",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "default_streaming_mode",
+            "title": "Default streaming mode",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"enum\":[\"proxy\",\"cache\"]}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Mode",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "kepubify_path",
+            "title": "Kepubify binary path",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "kindle_smtp_config",
+            "title": "Kindle SMTP config (JSON)",
+            "description": "{\"host\":\"...\",\"port\":587,\"username\":\"...\",\"password\":\"...\",\"from\":\"...\",\"tls\":\"starttls\"}",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"object\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "JSON",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "opds_realm",
+            "title": "OPDS realm",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Realm",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "path_remappings",
+            "title": "Path remappings (JSON)",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "JSON array",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "auto_approve_requests",
+            "title": "Auto-approve requests",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enabled",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "target_backend_plugin_id",
+            "title": "Default download provider",
+            "description": "Plugin install id of the request/download provider to use by default.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Plugin ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "target_backend_installation_id",
+            "title": "Default download provider installation",
+            "description": "Optional installed instance ID for the default provider. When empty, the provider plugin ID is used.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Installation ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "standalone_http_listen",
+            "title": "Standalone HTTP listen address",
+            "description": "Optional. When set (e.g. ':7878' or '127.0.0.1:7878'), the plugin serves its HTTP routes directly on this address so operators can reverse-proxy a hostname (e.g. ebooks.example.com) to it. Public client-app routes (OPDS, kosync, Kobo, Kindle inbound) work normally there; protected SPA routes 401 (no Continuum session). Changing this requires a plugin restart. Leave empty to disable.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen address",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-ebooks",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-ebooks",
+          "checksum": "3dc996496ff06f85ba1ba7cdfdba922d44915e68cb5fa7ae65a60cdc6fdb784f"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.guest-pass",
+        "version": "0.1.0",
+        "checksum": "74186ca99ca9933284aea2f8befc9d13ada4febdb7420497807b87f548c9ab4f",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "guest-pass",
+            "display_name": "Guest Pass",
+            "description": "Temporary public links for tightly scoped media access."
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "maintenance",
+            "display_name": "Guest pass maintenance",
+            "description": "Prunes old guest-pass audit events.",
+            "cron": "17 */6 * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "admin_api",
+            "method": "*",
+            "path": "/api/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "public_api",
+            "method": "*",
+            "path": "/api/public/*",
+            "access": "public"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "pass_page",
+            "method": "GET",
+            "path": "/p/*",
+            "access": "public"
+          },
+          {
+            "id": "admin_page",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Guest Passes",
+            "navigation_kind": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated guest_pass schema (e.g. postgres://plugin_guest_pass:...@host:5432/continuum?search_path=guest_pass&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "public_base_url",
+            "title": "Public base URL",
+            "description": "Optional absolute URL used when returning share links. Leave empty to return relative plugin URLs.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Public URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "audit_retention_days",
+            "title": "Audit retention days",
+            "description": "How long to retain guest-pass event rows after creation. Defaults to 180.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":1}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Retention days",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-guest-pass",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-guest-pass",
+          "checksum": "74186ca99ca9933284aea2f8befc9d13ada4febdb7420497807b87f548c9ab4f"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.local-audiobooks",
+        "version": "0.2.0",
+        "checksum": "eab8abf320a0a8f94f90b96c259dd54e2afe21e75294f302ab25b1df1f826a3f",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "audiobook_backend.v1",
+            "id": "local_audiobooks",
+            "display_name": "Local Audiobooks Library",
+            "description": "Scans local audiobook libraries and exposes them to the Audiobooks portal."
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "api",
+            "display_name": "Catalog + admin HTTP routes"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "library_scan",
+            "display_name": "Periodic library rescan",
+            "cron": "0 */6 * * *"
+          },
+          {
+            "type": "metadata_provider.v1",
+            "id": "local_audiobooks_meta",
+            "display_name": "Local Audiobooks metadata aggregator",
+            "description": "Searches Audnexus, AudiMeta, iTunes, Storytel, BookBeat, Audioteka, and Audiobookcovers.",
+            "metadata": {
+              "default_priority": {
+                "audiobook": 1
+              }
+            }
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "metadata_enrichment_worker",
+            "display_name": "Metadata enrichment worker",
+            "cron": "* * * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "admin",
+            "method": "*",
+            "path": "/admin/*",
+            "access": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated local_audiobooks schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "library_paths",
+            "title": "Library root paths",
+            "description": "Absolute filesystem paths to scan for .m4b files. JSON array of strings, e.g. [\"/srv/audiobooks\"].",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}}}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "JSON array of paths",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "standalone_http_listen",
+            "title": "Standalone HTTP listen address",
+            "description": "Optional. Bind a TCP listener (e.g. ':7879' or '127.0.0.1:7879') for presigned-URL byte-range streaming. Requires stream_signing_secret. Leave empty to disable.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen address",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "stream_signing_secret",
+            "title": "Stream signing secret (HMAC)",
+            "description": "32-byte base64-encoded shared secret with the audiobooks portal. Required when standalone_http_listen is set. Used to verify presigned stream URLs.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Base64 secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_sources_enabled",
+            "title": "Enabled metadata sources",
+            "description": "JSON array of source IDs to query. Defaults to all sources.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"default\":[\"audnexus\",\"audimeta\",\"itunes\",\"storytel\",\"bookbeat\",\"audioteka\",\"audiobookcovers\"]}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source IDs (JSON array)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_default_region",
+            "title": "Default metadata region",
+            "description": "ISO country code used when no per-request region is supplied. Defaults to \"us\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"default\":\"us\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Region code",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_cache_ttl_days",
+            "title": "Metadata cache TTL (days)",
+            "description": "Number of days a positive metadata cache entry is retained. Defaults to 30.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"default\":30}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "TTL in days",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_rate_limit_rps",
+            "title": "Metadata source rate limit (RPS)",
+            "description": "Per-source requests-per-second budget for the aggregator. Defaults to 5.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"default\":5}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Requests per second",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "scan_inline_enrich",
+            "title": "Inline enrichment on scan",
+            "description": "When true, metadata enrichment runs synchronously after each library scan completes. Defaults to false.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\",\"default\":false}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable inline enrichment",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_scan_source",
+            "title": "Scan enrichment source",
+            "description": "Source ID used by the enrichment worker during scans. Defaults to \"audnexus\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"default\":\"audnexus\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-local-audiobooks",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-local-audiobooks",
+          "checksum": "eab8abf320a0a8f94f90b96c259dd54e2afe21e75294f302ab25b1df1f826a3f"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.local-ebooks",
+        "version": "0.1.0",
+        "checksum": "0666e53fd67eb3f9361ccd151a4f247fcc5cc3d20ad5f625be285d3da2e8b0a5",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "ebook_backend.v1",
+            "id": "local_ebooks",
+            "display_name": "Local Ebooks Library",
+            "description": "Scans local ebook, document, and future comic libraries and exposes them to the Ebooks portal.",
+            "metadata": {
+              "ebook_roles": [
+                "library_source"
+              ],
+              "supports_catalog": true,
+              "supports_requests": false,
+              "supports_auto_monitoring": false
+            }
+          },
+          {
+            "type": "metadata_provider.v1",
+            "id": "local_ebooks_meta",
+            "display_name": "Local Ebooks metadata aggregator",
+            "description": "Searches OpenLibrary, GoogleBooks, ISBNdb, Hardcover, Goodreads, Amazon, Anna's Archive, Project Gutenberg, BookBrainz, FantasticFiction, ISFDB, LibraryThing, Internet Archive, WorldCat, and Douban.",
+            "metadata": {
+              "default_priority": {
+                "book": 1
+              }
+            }
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "library_scan",
+            "display_name": "Periodic library rescan",
+            "cron": "0 */6 * * *"
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "metadata_enrichment_worker",
+            "display_name": "Metadata enrichment worker",
+            "cron": "* * * * *"
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "admin",
+            "method": "*",
+            "path": "/admin/*",
+            "access": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated Local Ebooks schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "library_paths",
+            "title": "Library root paths",
+            "description": "Absolute filesystem paths to scan. Use strings for legacy config, or objects with path/name/media_type for multiple libraries, e.g. [{\"path\":\"/srv/ebooks\",\"name\":\"Books\",\"media_type\":\"book\"},{\"path\":\"/srv/comics\",\"name\":\"Comics\",\"media_type\":\"comics\"}].",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"media_type\":{\"type\":\"string\",\"enum\":[\"book\",\"comics\",\"manga\",\"documents\"]}},\"required\":[\"path\"]}]}}}}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "JSON array of paths or library objects",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "standalone_http_listen",
+            "title": "Standalone HTTP listen address",
+            "description": "Optional. Bind a TCP listener (e.g. ':7880' or '127.0.0.1:7880') for direct catalog access. Leave empty to disable.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen address",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "stream_signing_secret",
+            "title": "Stream signing secret (HMAC)",
+            "description": "32-byte base64-encoded shared secret used to sign presigned download URLs. Reserved for future use.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Base64 secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_sources_enabled",
+            "title": "Enabled metadata sources",
+            "description": "JSON array of source IDs to query. Defaults to all sources.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\",\"items\":{\"type\":\"string\"},\"default\":[\"openlibrary\",\"googlebooks\",\"isbndb\",\"hardcover\",\"goodreads\",\"amazon\",\"annasarchive\",\"gutenberg\",\"bookbrainz\",\"fantasticfiction\",\"isfdb\",\"librarything\",\"internetarchive\",\"worldcat\",\"douban\"]}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source IDs (JSON array)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_default_region",
+            "title": "Default metadata region",
+            "description": "ISO country code used when no per-request region is supplied. Defaults to \"us\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"default\":\"us\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Region code",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_cache_ttl_days",
+            "title": "Metadata cache TTL (days)",
+            "description": "Number of days a positive metadata cache entry is retained. Defaults to 30.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"default\":30}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "TTL in days",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_rate_limit_rps",
+            "title": "Metadata source rate limit (RPS)",
+            "description": "Per-source requests-per-second budget for the aggregator. Defaults to 5.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"default\":5}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Requests per second",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "scan_inline_enrich",
+            "title": "Inline enrichment on scan",
+            "description": "When true, metadata enrichment runs synchronously after each library scan completes. Defaults to false.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\",\"default\":false}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable inline enrichment",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "metadata_scan_source",
+            "title": "Scan enrichment source",
+            "description": "Source ID used by the enrichment worker during scans. Defaults to \"openlibrary\".",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\",\"default\":\"openlibrary\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Source ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "googlebooks_api_key",
+            "title": "Google Books API key",
+            "description": "Optional API key for the Google Books metadata source.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "isbndb_api_key",
+            "title": "ISBNdb API key",
+            "description": "Optional API key for the ISBNdb metadata source.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "hardcover_api_key",
+            "title": "Hardcover API key",
+            "description": "Optional API key for the Hardcover metadata source.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-local-ebooks",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-local-ebooks",
+          "checksum": "0666e53fd67eb3f9361ccd151a4f247fcc5cc3d20ad5f625be285d3da2e8b0a5"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.notifications",
+        "version": "0.1.0",
+        "checksum": "7815453147ff98dc0a36bda85d6ad7363781cbae66daf1ca70facee428071b25",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "event_consumer.v1",
+            "id": "notification-events",
+            "display_name": "Notification events",
+            "description": "Receives Continuum and plugin events, applies rules, and queues outbound notifications.",
+            "subscriptions": [
+              "continuum.notifications.send",
+              "notifications.send",
+              "library.media_added",
+              "plugin.continuum.requests.submitted",
+              "plugin.continuum.requests.approved",
+              "plugin.continuum.requests.denied",
+              "plugin.continuum.requests.cancelled",
+              "plugin.continuum.requests.fulfilled",
+              "plugin.continuum.arrproxy.submitted",
+              "plugin.continuum.arrproxy.downloading",
+              "plugin.continuum.arrproxy.imported",
+              "plugin.continuum.arrproxy.failed",
+              "plugin.continuum.arrproxy.cancelled",
+              "plugin.continuum.arrproxy.unrouted",
+              "plugin.continuum.arrouter.submitted",
+              "plugin.continuum.arrouter.downloading",
+              "plugin.continuum.arrouter.imported",
+              "plugin.continuum.arrouter.failed",
+              "plugin.continuum.arrouter.cancelled",
+              "plugin.continuum.arrouter.unrouted",
+              "plugin.continuum.arr-router.submitted",
+              "plugin.continuum.arr-router.downloading",
+              "plugin.continuum.arr-router.imported",
+              "plugin.continuum.arr-router.failed",
+              "plugin.continuum.audiobooks.request_submitted",
+              "plugin.continuum.ebooks.request_submitted",
+              "plugin.continuum.bookwarehouse-audio.request_acknowledged",
+              "plugin.continuum.bookwarehouse-audio.request_status_changed",
+              "plugin.continuum.bookwarehouse-audio.request_fulfilled",
+              "plugin.continuum.bookwarehouse-audio.request_failed",
+              "plugin.continuum.bookwarehouse-ebook.request_acknowledged",
+              "plugin.continuum.bookwarehouse-ebook.request_status_changed",
+              "plugin.continuum.bookwarehouse-ebook.request_fulfilled",
+              "plugin.continuum.bookwarehouse-ebook.request_failed",
+              "plugin.continuum.annas-archive-downloader.request_acknowledged",
+              "plugin.continuum.annas-archive-downloader.request_status_changed",
+              "plugin.continuum.annas-archive-downloader.request_fulfilled",
+              "plugin.continuum.annas-archive-downloader.request_failed",
+              "plugin.continuum.ebookdb.request_acknowledged",
+              "plugin.continuum.ebookdb.request_status_changed",
+              "plugin.continuum.ebookdb.request_fulfilled",
+              "plugin.continuum.ebookdb.request_failed",
+              "plugin.*"
+            ]
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "retry-notifications",
+            "display_name": "Retry notifications",
+            "description": "Retries queued or failed notification deliveries."
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "admin",
+            "display_name": "Notifications admin",
+            "description": "Admin UI for targets, rules, provider settings, delivery audit, retries, and test sends."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "service_api",
+            "method": "*",
+            "path": "/api/v1/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "spa",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Notifications",
+            "navigation_kind": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "connection",
+            "title": "Notifications connection",
+            "description": "Postgres DSN for the dedicated notifications schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"database_url\":{\"type\":\"string\"}},\"required\":[\"database_url\"]}",
+            "required": true,
+            "admin_form": {
+              "submit_label": "Save",
+              "fields": [
+                {
+                  "key": "database_url",
+                  "label": "Postgres connection URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-notifications",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-notifications",
+          "checksum": "7815453147ff98dc0a36bda85d6ad7363781cbae66daf1ca70facee428071b25"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.oidc-login",
+        "version": "0.1.0",
+        "checksum": "d23f00424128f9bb4c062e688c54fc8367df306df9e23e89f7e214136076a2e5",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "auth_provider.v1",
+            "id": "oidc",
+            "display_name": "Sign in with OIDC",
+            "description": "Generic OIDC authentication. Multi-instance: install once per IdP.",
+            "auth_modes": [
+              "oauth2"
+            ],
+            "icon_url": "/assets/generic-key.svg"
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "spa",
+            "display_name": "OIDC admin SPA",
+            "description": "Visual editors for claim filters and role mapping."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "admin_html",
+            "method": "GET",
+            "path": "/admin",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "OIDC Login",
+            "navigation_kind": "admin"
+          },
+          {
+            "id": "admin_html_sub",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "admin_api",
+            "method": "*",
+            "path": "/api/v1/admin/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "health",
+            "method": "GET",
+            "path": "/api/v1/health",
+            "access": "public"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "issuer_url",
+            "title": "Issuer URL",
+            "required": true,
+            "description": "OIDC issuer URL, e.g. https://auth.example.com. Discovery resolves <issuer>/.well-known/openid-configuration.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "client_id",
+            "title": "Client ID",
+            "required": true,
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Client ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "client_secret",
+            "title": "Client secret",
+            "required": true,
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Client secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "scopes",
+            "title": "Scopes",
+            "description": "Space-separated. Default: openid profile email.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Scopes",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "display_name",
+            "title": "Display name",
+            "description": "Login button label. Configurable per install for multi-IdP setups.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Button label",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "icon_url_path",
+            "title": "Icon",
+            "description": "Bundled icon filename (e.g., authentik.svg). Managed via /admin SPA.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Icon",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "claim_filters",
+            "title": "Claim filters",
+            "description": "JSON array of {claim_path, operator, value}. Managed via /admin SPA.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Filters",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "claim_role_mapping",
+            "title": "Claim role mapping",
+            "description": "JSON array of {claim_path, operator, value, role}. Managed via /admin SPA.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Mapping",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "email_verified_required",
+            "title": "Require verified email",
+            "description": "If true, reject id_tokens with email_verified=false. Default: true.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Require verified email",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "link_by_email",
+            "title": "Auto-link by email",
+            "description": "If true, on email collision auto-link to existing continuum user. Otherwise show confirmation page (safer). Default: false.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Auto-link by email",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-oidc-login",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-oidc-login",
+          "checksum": "d23f00424128f9bb4c062e688c54fc8367df306df9e23e89f7e214136076a2e5"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.public-catalog",
+        "version": "0.1.0",
+        "checksum": "4a86045dd1219b59f907440da42489eaf948ed74e67d3ad21f3e4e479677bd41",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "public-catalog",
+            "display_name": "Public Catalog",
+            "description": "Public advertising page with stats, embedded HTML, and signed-token catalog browsing."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "public_page",
+            "method": "GET",
+            "path": "/",
+            "access": "public"
+          },
+          {
+            "id": "catalog_page",
+            "method": "GET",
+            "path": "/catalog",
+            "access": "public"
+          },
+          {
+            "id": "public_api",
+            "method": "*",
+            "path": "/api/public/*",
+            "access": "public"
+          },
+          {
+            "id": "catalog_api",
+            "method": "*",
+            "path": "/api/catalog/*",
+            "access": "public"
+          },
+          {
+            "id": "admin_api",
+            "method": "*",
+            "path": "/api/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "admin_page",
+            "method": "GET",
+            "path": "/admin",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "Public Catalog",
+            "navigation_kind": "admin"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "token_secret",
+            "title": "Catalog token secret",
+            "description": "Required HMAC secret for signing public catalog access links. Use at least 32 random bytes.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Token secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "standalone_http_listen",
+            "title": "Standalone HTTP listen address",
+            "description": "Optional public listener address, e.g. 127.0.0.1:8090 or :8090. Prefer loopback behind a reverse proxy.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Listen address",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "public_base_url",
+            "title": "Public base URL",
+            "description": "Optional absolute URL used when generated catalog links are returned.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Public URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "ad_html",
+            "title": "Embedded advertising HTML",
+            "description": "HTML rendered on the public landing page.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "HTML",
+                  "control": "ADMIN_FORM_CONTROL_TEXTAREA"
+                }
+              ]
+            }
+          },
+          {
+            "key": "token_ttl_hours",
+            "title": "Catalog token TTL hours",
+            "description": "Default generated catalog link lifetime. Defaults to 168.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"integer\",\"minimum\":1}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Hours",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                }
+              ]
+            }
+          },
+          {
+            "key": "ebook_installation_id",
+            "title": "Ebook portal installation ID",
+            "description": "Optional Continuum plugin installation ID for continuum.ebooks. Enables ebook stats and browsing through authenticated inter-plugin HTTP.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Installation ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "audiobook_installation_id",
+            "title": "Audiobook portal installation ID",
+            "description": "Optional Continuum plugin installation ID for continuum.audiobooks. Enables audiobook stats and browsing through authenticated inter-plugin HTTP.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Installation ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-public-catalog",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-public-catalog",
+          "checksum": "4a86045dd1219b59f907440da42489eaf948ed74e67d3ad21f3e4e479677bd41"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.requests",
+        "version": "0.1.0",
+        "checksum": "6eb97a4cd2a59d6dbbec5cd90fe5e5d0100ffdd96a816c088570f2b9a4cb8743",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "requests-ui",
+            "display_name": "Requests",
+            "description": "User-submitted media requests with approval workflow."
+          },
+          {
+            "type": "event_consumer.v1",
+            "id": "fulfillment-watcher",
+            "display_name": "Fulfillment watcher",
+            "description": "Tracks request status from library scans and from the configured router plugin.",
+            "subscriptions": [
+              "library.media_added",
+              "plugin.continuum.arrouter.submitted",
+              "plugin.continuum.arrouter.downloading",
+              "plugin.continuum.arrouter.imported",
+              "plugin.continuum.arrouter.failed",
+              "plugin.continuum.arrouter.cancelled",
+              "plugin.continuum.arrouter.unrouted",
+              "plugin.continuum.arrproxy.submitted",
+              "plugin.continuum.arrproxy.downloading",
+              "plugin.continuum.arrproxy.imported",
+              "plugin.continuum.arrproxy.failed",
+              "plugin.continuum.arrproxy.cancelled",
+              "plugin.continuum.arrproxy.unrouted"
+            ]
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "spa",
+            "method": "GET",
+            "path": "/*",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "Requests",
+            "navigation_kind": "user"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "database_url",
+            "title": "Postgres connection string",
+            "description": "DSN for the dedicated requests schema (e.g. postgres://plugin_requests:...@host:5432/continuum?search_path=requests&sslmode=disable).",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Connection URL",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "tmdb_api_key",
+            "title": "TMDB API key (override)",
+            "description": "TMDB v3 API key. Optional \u2014 the plugin embeds a default project key (same as continuum.tmdb), so leave this empty unless you want to use your own.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "required": false,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API key",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "webhook_url",
+            "title": "Legacy webhook URL for state-change notifications",
+            "description": "Optional compatibility path. When set, the plugin POSTs a JSON payload to this URL on approve / deny / cancel transitions. Prefer continuum.notifications for queued multi-target delivery. Best-effort delivery with 3 retries; leave empty to disable.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "required": false,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Webhook URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "quotas",
+            "title": "Per-user monthly quotas",
+            "description": "Defaults applied to every non-admin user.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"default_monthly_movie_limit\":{\"type\":\"integer\"},\"default_monthly_tv_limit\":{\"type\":\"integer\"},\"admin_unlimited\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "default_monthly_movie_limit",
+                  "label": "Movies per month",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "default_monthly_tv_limit",
+                  "label": "TV per month",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "admin_unlimited",
+                  "label": "Admins unlimited",
+                  "control": "ADMIN_FORM_CONTROL_SWITCH"
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-requests",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-requests",
+          "checksum": "6eb97a4cd2a59d6dbbec5cd90fe5e5d0100ffdd96a816c088570f2b9a4cb8743"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.stream-dashboard",
+        "version": "0.1.0",
+        "checksum": "d38ed42958f267be10cb2f5d8ecc3241bf2471ac87193d1374d6e1541c169e7c",
+        "continuum_api_version": "v1",
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ],
+        "capabilities": [
+          {
+            "type": "http_routes.v1",
+            "id": "dashboard",
+            "display_name": "Stream Dashboard",
+            "description": "Dashboard for Continuum active streams, playback history, map coverage, and globe view."
+          },
+          {
+            "type": "scheduled_task.v1",
+            "id": "sync-playback-history",
+            "display_name": "Sync playback history",
+            "description": "Copies Continuum playback history into the plugin schema and applies retention."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "api",
+            "method": "*",
+            "path": "/api/*",
+            "access": "authenticated"
+          },
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "dashboard_root",
+            "method": "GET",
+            "path": "/dashboard",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "Stream Dashboard",
+            "navigation_kind": "app"
+          },
+          {
+            "id": "dashboard_app",
+            "method": "GET",
+            "path": "/dashboard/*",
+            "access": "authenticated",
+            "navigable": true,
+            "navigation_label": "Stream Dashboard",
+            "navigation_kind": "app"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "plugin_database",
+            "title": "Plugin database",
+            "description": "Postgres DSN for the plugin-owned stream_dashboard schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"database_url\":{\"type\":\"string\"}},\"required\":[\"database_url\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "database_url",
+                  "label": "Plugin database URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "continuum_database",
+            "title": "Continuum source database",
+            "description": "Read-only Postgres DSN for Continuum's public schema. Used to sync active sessions and playback history into the plugin schema.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"database_url\":{\"type\":\"string\"}},\"required\":[\"database_url\"]}",
+            "required": true,
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "database_url",
+                  "label": "Continuum source URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "stream_dashboard",
+            "title": "Stream Dashboard settings",
+            "description": "Dashboard refresh, retention, and GeoIP enrichment settings.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"refresh_seconds\":{\"type\":\"integer\",\"minimum\":5},\"default_server_lat\":{\"type\":\"number\"},\"default_server_lon\":{\"type\":\"number\"},\"history_retention_days\":{\"type\":\"integer\",\"minimum\":0},\"history_retention_max_rows\":{\"type\":\"integer\",\"minimum\":0},\"history_retention_min_seconds\":{\"type\":\"integer\",\"minimum\":0},\"history_retention_completed_only\":{\"type\":\"boolean\"},\"geoip_enabled\":{\"type\":\"boolean\"},\"geoip_database_path\":{\"type\":\"string\"},\"geoip_lookup_missing_coordinates\":{\"type\":\"boolean\"},\"geoip_override_session_coordinates\":{\"type\":\"boolean\"},\"geoip_lookup_cdn_nodes\":{\"type\":\"boolean\"},\"geoip_include_private_ips\":{\"type\":\"boolean\"},\"geoip_provider_order\":{\"type\":\"string\"},\"geoip_request_timeout_seconds\":{\"type\":\"integer\",\"minimum\":1},\"geoip_cache_ttl_seconds\":{\"type\":\"integer\",\"minimum\":60},\"geoip_cache_max_entries\":{\"type\":\"integer\",\"minimum\":100},\"geoip_ipapi_enabled\":{\"type\":\"boolean\"},\"geoip_ipapi_base_url\":{\"type\":\"string\"},\"geoip_ipinfo_enabled\":{\"type\":\"boolean\"},\"geoip_ipinfo_base_url\":{\"type\":\"string\"},\"geoip_ipinfo_token\":{\"type\":\"string\"},\"geoip_ipwhois_enabled\":{\"type\":\"boolean\"},\"geoip_ipwhois_base_url\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "submit_label": "Save",
+              "fields": [
+                {
+                  "key": "refresh_seconds",
+                  "label": "Refresh interval (seconds)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "default_server_lat",
+                  "label": "Default server latitude",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "default_server_lon",
+                  "label": "Default server longitude",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "history_retention_days",
+                  "label": "History retention days",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "history_retention_max_rows",
+                  "label": "History max rows",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "history_retention_min_seconds",
+                  "label": "Minimum watch seconds",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "history_retention_completed_only",
+                  "label": "Keep completed plays only",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_enabled",
+                  "label": "Enable GeoIP lookup",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_database_path",
+                  "label": "GeoIP city database path",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                },
+                {
+                  "key": "geoip_lookup_missing_coordinates",
+                  "label": "Fill missing session coordinates",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_override_session_coordinates",
+                  "label": "Override session coordinates",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_lookup_cdn_nodes",
+                  "label": "Resolve CDN node coordinates",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_include_private_ips",
+                  "label": "Lookup private/local IPs",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_provider_order",
+                  "label": "GeoIP provider order",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                },
+                {
+                  "key": "geoip_request_timeout_seconds",
+                  "label": "GeoIP request timeout (seconds)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "geoip_cache_ttl_seconds",
+                  "label": "GeoIP cache TTL (seconds)",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "geoip_cache_max_entries",
+                  "label": "GeoIP max cache entries",
+                  "control": "ADMIN_FORM_CONTROL_NUMBER"
+                },
+                {
+                  "key": "geoip_ipapi_enabled",
+                  "label": "Enable ip-api provider",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_ipapi_base_url",
+                  "label": "ip-api base URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                },
+                {
+                  "key": "geoip_ipinfo_enabled",
+                  "label": "Enable IPinfo provider",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_ipinfo_base_url",
+                  "label": "IPinfo base URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                },
+                {
+                  "key": "geoip_ipinfo_token",
+                  "label": "IPinfo token",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD"
+                },
+                {
+                  "key": "geoip_ipwhois_enabled",
+                  "label": "Enable ipwho.is provider",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                },
+                {
+                  "key": "geoip_ipwhois_base_url",
+                  "label": "ipwho.is base URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-stream-dashboard",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-stream-dashboard",
+          "checksum": "d38ed42958f267be10cb2f5d8ecc3241bf2471ac87193d1374d6e1541c169e7c"
+        }
+      }
+    },
+    {
+      "manifest": {
+        "plugin_id": "continuum.whmcs-login",
+        "version": "0.1.0",
+        "checksum": "9d9bd9bdb9864ce24401fe2257b1a101a4834f646f93776a61cb5cff865594d9",
+        "continuum_api_version": "v1",
+        "capabilities": [
+          {
+            "type": "auth_provider.v1",
+            "id": "whmcs",
+            "display_name": "Sign in with WHMCS",
+            "description": "OAuth/OIDC auth against a WHMCS billing system.",
+            "auth_modes": [
+              "oauth2"
+            ],
+            "icon_url": "/assets/whmcs-logo.svg"
+          },
+          {
+            "type": "http_routes.v1",
+            "id": "spa",
+            "display_name": "WHMCS Login admin",
+            "description": "Admin SPA for configuring allowed products."
+          }
+        ],
+        "http_routes": [
+          {
+            "id": "assets",
+            "method": "GET",
+            "path": "/assets/*",
+            "access": "public"
+          },
+          {
+            "id": "admin_html",
+            "method": "GET",
+            "path": "/admin/*",
+            "access": "admin",
+            "navigable": true,
+            "navigation_label": "WHMCS Login",
+            "navigation_kind": "admin"
+          },
+          {
+            "id": "admin_api",
+            "method": "*",
+            "path": "/api/v1/admin/*",
+            "access": "admin"
+          },
+          {
+            "id": "health",
+            "method": "GET",
+            "path": "/api/v1/health",
+            "access": "public"
+          }
+        ],
+        "global_config_schema": [
+          {
+            "key": "whmcs_server_url",
+            "title": "WHMCS server URL",
+            "description": "Base URL of the WHMCS install (e.g. https://billing.example.com). No trailing slash.",
+            "required": true,
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "URL",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "client_id",
+            "title": "OAuth client ID",
+            "required": true,
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Client ID",
+                  "control": "ADMIN_FORM_CONTROL_TEXT",
+                  "required": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "client_secret",
+            "title": "OAuth client secret",
+            "required": true,
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}},\"required\":[\"value\"]}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Client secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "required": true,
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "display_name",
+            "title": "Login button label",
+            "description": "Text shown for this provider on the Continuum login screen. Leave empty to use the default manifest label.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Button label",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "allowed_product_ids",
+            "title": "Allowed WHMCS products",
+            "description": "Managed via the plugin /admin SPA. On-disk format: comma-separated product IDs. If empty, all WHMCS accounts are allowed.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Product IDs",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "whmcs_admin_api_id",
+            "title": "WHMCS admin API identifier",
+            "description": "Required for product gating and Discord ID fetch.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API id",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "whmcs_admin_api_secret",
+            "title": "WHMCS admin API secret",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "API secret",
+                  "control": "ADMIN_FORM_CONTROL_PASSWORD",
+                  "secret": true
+                }
+              ]
+            }
+          },
+          {
+            "key": "fetch_discord_id",
+            "title": "Fetch Discord ID from WHMCS",
+            "description": "If true, the plugin reads a WHMCS custom field on login and includes the value as the discord_id claim.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"boolean\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Enable",
+                  "control": "ADMIN_FORM_CONTROL_CHECKBOX"
+                }
+              ]
+            }
+          },
+          {
+            "key": "discord_id_custom_field",
+            "title": "Discord ID custom field name",
+            "description": "Name of the WHMCS client custom field that stores the Discord ID. Defaults to 'Discord ID'.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"string\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Field name",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          },
+          {
+            "key": "claim_role_mapping",
+            "title": "Claim role mapping",
+            "description": "Array of {product_id, role} entries. Role is 'user' or 'admin'. After every successful login, the host applies the highest-matched role.",
+            "json_schema": "{\"type\":\"object\",\"properties\":{\"value\":{\"type\":\"array\"}}}",
+            "admin_form": {
+              "fields": [
+                {
+                  "key": "value",
+                  "label": "Role mapping (JSON array)",
+                  "control": "ADMIN_FORM_CONTROL_TEXT"
+                }
+              ]
+            }
+          }
+        ],
+        "supported_platforms": [
+          {
+            "os": "linux",
+            "arch": "amd64"
+          }
+        ]
+      },
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-whmcs-login",
+      "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/checksums.txt",
+      "binaries": {
+        "linux/amd64": {
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v2026.05.17/plugin-linux-amd64-whmcs-login",
+          "checksum": "9d9bd9bdb9864ce24401fe2257b1a101a4834f646f93776a61cb5cff865594d9"
+        }
+      }
+    }
+  ]
+}
