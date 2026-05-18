@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+// Continuum currently decodes repository indexes with Go's encoding/json into
+// protobuf-generated structs. That is not the same as protojson. Keep the
+// catalog index minimal and do not copy full source plugin manifests here.
+//
+// In particular, config schemas contain AdminFormControl enum names such as
+// ADMIN_FORM_CONTROL_PASSWORD. Those are valid in source manifests, but they
+// make the repository index fail to decode before Continuum can list any
+// plugin apps. The installed plugin package still carries the full manifest.
 const manifestPath = new URL("../manifest.json", import.meta.url);
 const checksumsPath = new URL("../checksums.txt", import.meta.url);
 

@@ -28,6 +28,7 @@ node scripts/validate-catalog.mjs
 
 ## Operator Docs
 
+- [Catalog maintenance](docs/catalog-maintenance.md)
 - [Plugin communication map](docs/plugin-communication-map.md)
 
 ## Included Plugins
