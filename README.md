@@ -16,6 +16,16 @@ entry includes:
 - an inline SHA-256 checksum
 - a `checksums.txt` release asset for operators who want to verify downloads
 
+The catalog manifest intentionally omits plugin config schema blocks. Continuum
+decodes repository indexes with Go's standard `encoding/json` path, while full
+plugin manifests are loaded from installed plugin packages.
+
+Validate catalog changes before publishing:
+
+```sh
+node scripts/validate-catalog.mjs
+```
+
 ## Operator Docs
 
 - [Plugin communication map](docs/plugin-communication-map.md)
