@@ -67,19 +67,53 @@ are currently tolerated by Continuum when they decode cleanly. Keep them only
 when they are useful for display or install behavior. The hard rule is that
 config schema blocks do not belong in the catalog index.
 
+## Catalog UI Dependency Notes
+
+The current Continuum admin catalog page does not render this repository's
+markdown docs, and it does not render a top-level plugin description. It shows:
+
+- `manifest.plugin_id`
+- `manifest.version`
+- each capability's `display_name` as compact badges
+
+For that reason, each catalog entry must keep its first capability
+`display_name` as a short dependency/status note. Examples:
+
+- `Portal: Ebooks`
+- `For Ebooks: Local Library`
+- `For Ebooks: Anna's Archive Downloader`
+- `Portal: Audiobooks`
+- `For Audiobooks: AudiobookBay Requests`
+- `Portal: Requests`
+- `For Requests: Arr Router`
+- `For Requests: Arr Proxy`
+- `Auth: OIDC Login`
+
+The first capability `description` must also carry the longer dependency note.
+Continuum may render that field in a future catalog UI, and it is useful for API
+consumers today.
+
+The validator enforces these first-capability display notes through the
+`catalogDisplayNotes` map in `scripts/validate-catalog.mjs`. When adding,
+renaming, or regenerating catalog entries, update that map and keep the first
+capability aligned with it. If these notes are lost, the catalog will still
+decode, but operators will again see a list of apparently independent plugins.
+
 ## Release Checklist
 
 1. Build every plugin binary for each published platform.
 2. Generate `checksums.txt` from the exact release binaries.
 3. Update `manifest.json` versions, release URLs, and checksums.
 4. Ensure the catalog does not include config schema blocks.
-5. Run the catalog validator:
+5. Ensure the first capability for every plugin keeps its catalog-visible
+   dependency note from `scripts/validate-catalog.mjs`.
+6. Run the catalog validator:
 
 ```sh
 node scripts/validate-catalog.mjs
 ```
 
-6. If `/opt/continuum` is available locally, also verify the host decode path:
+7. If `/opt/continuum` is available locally, also verify the host decode path:
 
 ```sh
 cat >/tmp/validate-continuum-catalog.go <<'GO'
@@ -133,9 +167,9 @@ cd /opt/continuum
 go run /tmp/validate-continuum-catalog.go /opt/continuum_plugins/rxwatcher-continuum-plugin-catalog/manifest.json
 ```
 
-7. Push only this catalog repository unless explicitly asked to push another
+8. Push only this catalog repository unless explicitly asked to push another
    repository.
-8. Read back the published raw manifest and validate it:
+9. Read back the published raw manifest and validate it:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/RXWatcher/continuum-plugins/main/manifest.json \

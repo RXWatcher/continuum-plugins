@@ -12,6 +12,138 @@ import path from "node:path";
 const manifestPath = new URL("../manifest.json", import.meta.url);
 const checksumsPath = new URL("../checksums.txt", import.meta.url);
 
+const catalogDisplayNotes = new Map([
+  [
+    "continuum.annas-archive-downloader",
+    {
+      displayName: "For Ebooks: Anna's Archive Downloader",
+      description:
+        "Requires continuum.ebooks for request intake and status display; provides ebook download/request fulfillment.",
+    },
+  ],
+  [
+    "continuum.arrouter",
+    {
+      displayName: "For Requests: Arr Router",
+      description:
+        "Requires continuum.requests; routes approved movie/TV requests to one of multiple Radarr/Sonarr targets.",
+    },
+  ],
+  [
+    "continuum.arrproxy",
+    {
+      displayName: "For Requests: Arr Proxy",
+      description:
+        "Requires continuum.requests; forwards approved movie/TV requests to a single Arr Proxy target.",
+    },
+  ],
+  [
+    "continuum.audiobookbay-requests",
+    {
+      displayName: "For Audiobooks: AudiobookBay Requests",
+      description:
+        "Requires continuum.audiobooks for request intake and status display; provides audiobook request fulfillment.",
+    },
+  ],
+  [
+    "continuum.audiobooks",
+    {
+      displayName: "Portal: Audiobooks",
+      description:
+        "Audiobook portal. Pair with continuum.local-audiobooks or continuum.bookwarehouse-audio for browse/playback content.",
+    },
+  ],
+  [
+    "continuum.bookwarehouse-audio",
+    {
+      displayName: "For Audiobooks: BookWarehouse Audio",
+      description: "Requires continuum.audiobooks; provides a BookWarehouse audiobook backend.",
+    },
+  ],
+  [
+    "continuum.bookwarehouse-ebook",
+    {
+      displayName: "For Ebooks: BookWarehouse Ebook",
+      description:
+        "Requires continuum.ebooks; provides a Calibre/BookWarehouse ebook backend and request provider.",
+    },
+  ],
+  [
+    "continuum.ebooks",
+    {
+      displayName: "Portal: Ebooks",
+      description:
+        "Ebook portal. Pair with continuum.local-ebooks or continuum.bookwarehouse-ebook for browse/read content.",
+    },
+  ],
+  [
+    "continuum.guest-pass",
+    {
+      displayName: "For Continuum media: Guest Pass",
+      description: "Requires Continuum content/playback routes; creates temporary scoped public links.",
+    },
+  ],
+  [
+    "continuum.local-audiobooks",
+    {
+      displayName: "For Audiobooks: Local Library",
+      description:
+        "Requires continuum.audiobooks; provides local audiobook catalog, metadata, and streaming.",
+    },
+  ],
+  [
+    "continuum.local-ebooks",
+    {
+      displayName: "For Ebooks: Local Library",
+      description: "Requires continuum.ebooks; provides local ebook catalog, metadata, and file access.",
+    },
+  ],
+  [
+    "continuum.notifications",
+    {
+      displayName: "Observer: Notifications",
+      description:
+        "Optional observer; useful with event-producing plugins such as requests, routers, ebooks, and audiobooks.",
+    },
+  ],
+  [
+    "continuum.oidc-login",
+    {
+      displayName: "Auth: OIDC Login",
+      description: "Requires an external OIDC identity provider; adds a Continuum auth provider.",
+    },
+  ],
+  [
+    "continuum.public-catalog",
+    {
+      displayName: "For Ebooks/Audiobooks: Public Catalog",
+      description:
+        "Requires configured Ebooks and/or Audiobooks installations to expose public catalog browsing links.",
+    },
+  ],
+  [
+    "continuum.requests",
+    {
+      displayName: "Portal: Requests",
+      description: "Movie/TV request portal. Pair with continuum.arrouter or continuum.arrproxy for fulfillment.",
+    },
+  ],
+  [
+    "continuum.stream-dashboard",
+    {
+      displayName: "For active streams: Dashboard",
+      description: "Requires Continuum playback/session activity; displays active streams and history.",
+    },
+  ],
+  [
+    "continuum.whmcs-login",
+    {
+      displayName: "Auth: WHMCS Login",
+      description: "Requires a WHMCS instance; adds a Continuum auth provider.",
+    },
+  ],
+]);
+
 const index = JSON.parse(readFileSync(manifestPath, "utf8"));
 const checksumLines = readFileSync(checksumsPath, "utf8")
   .split(/\r?\n/)
@@ -45,6 +177,21 @@ for (const pkg of index.plugins) {
   }
   if (!Array.isArray(manifest.capabilities) || manifest.capabilities.length === 0) {
     throw new Error(`${manifest.plugin_id} must declare capabilities`);
+  }
+  const expectedDisplayNote = catalogDisplayNotes.get(manifest.plugin_id);
+  const primaryCapability = manifest.capabilities[0];
+  if (!expectedDisplayNote) {
+    throw new Error(`${manifest.plugin_id} is missing from catalogDisplayNotes`);
+  }
+  if (primaryCapability.display_name !== expectedDisplayNote.displayName) {
+    throw new Error(
+      `${manifest.plugin_id} first capability display_name must be "${expectedDisplayNote.displayName}" for catalog dependency visibility`,
+    );
+  }
+  if (primaryCapability.description !== expectedDisplayNote.description) {
+    throw new Error(
+      `${manifest.plugin_id} first capability description must preserve the catalog dependency note`,
+    );
   }
 
   const key = `${manifest.plugin_id}@${manifest.version}`;

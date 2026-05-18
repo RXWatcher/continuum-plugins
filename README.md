@@ -20,6 +20,11 @@ The catalog manifest intentionally omits plugin config schema blocks. Continuum
 decodes repository indexes with Go's standard `encoding/json` path, while full
 plugin manifests are loaded from installed plugin packages.
 
+The Continuum catalog UI currently shows capability `display_name` badges, not
+these markdown docs. The first capability on each plugin therefore carries the
+operator-visible dependency note, such as `Portal: Ebooks`,
+`For Ebooks: Local Library`, or `For Requests: Arr Router`.
+
 Validate catalog changes before publishing:
 
 ```sh
