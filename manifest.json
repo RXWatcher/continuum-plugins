@@ -16,8 +16,8 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "Anna's Archive Downloader API",
-            "description": "Download-provider API for Anna's Archive style search, fetch, and request forwarding."
+            "display_name": "For Ebooks: Anna's Archive Downloader",
+            "description": "Requires continuum.ebooks for request intake and status display; provides ebook download/request fulfillment."
           },
           {
             "type": "event_consumer.v1",
@@ -78,8 +78,8 @@
           {
             "type": "event_consumer.v1",
             "id": "router",
-            "display_name": "Router",
-            "description": "Routes request events to a registered Radarr/Sonarr based on rules.",
+            "display_name": "For Requests: Arr Router",
+            "description": "Requires continuum.requests; routes approved movie/TV requests to one of multiple Radarr/Sonarr targets.",
             "subscriptions": [
               "plugin.continuum.requests.submitted",
               "plugin.continuum.requests.cancelled"
@@ -147,8 +147,8 @@
           {
             "type": "event_consumer.v1",
             "id": "request-router",
-            "display_name": "Request router",
-            "description": "Forwards continuum.requests submissions and cancellations to the Arr Proxy backend (movies → Radarr, TV → Sonarr).",
+            "display_name": "For Requests: Arr Proxy",
+            "description": "Requires continuum.requests; forwards approved movie/TV requests to a single Arr Proxy target.",
             "subscriptions": [
               "plugin.continuum.requests.submitted",
               "plugin.continuum.requests.cancelled"
@@ -222,8 +222,8 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "AudiobookBay Requests API",
-            "description": "Request-provider API for scored AudiobookBay search, magnet resolution, diagnostics, and optional qBittorrent enqueueing."
+            "display_name": "For Audiobooks: AudiobookBay Requests",
+            "description": "Requires continuum.audiobooks for request intake and status display; provides audiobook request fulfillment."
           },
           {
             "type": "event_consumer.v1",
@@ -284,8 +284,8 @@
           {
             "type": "http_routes.v1",
             "id": "portal",
-            "display_name": "Audiobooks",
-            "description": "Customer-facing audiobook browser, player, request flow, and ABS-mobile API."
+            "display_name": "Portal: Audiobooks",
+            "description": "Audiobook portal. Pair with continuum.local-audiobooks or continuum.bookwarehouse-audio for browse/playback content."
           },
           {
             "type": "event_consumer.v1",
@@ -391,8 +391,8 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "BookWarehouse audio backend",
-            "description": "Catalog, cover, and streaming for a BookWarehouse instance."
+            "display_name": "For Audiobooks: BookWarehouse Audio",
+            "description": "Requires continuum.audiobooks; provides a BookWarehouse audiobook backend."
           },
           {
             "type": "audiobook_backend.v1",
@@ -429,8 +429,8 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "Book Warehouse ebook backend",
-            "description": "Calibre-backed ebook source: catalog, file streaming, request forwarding."
+            "display_name": "For Ebooks: BookWarehouse Ebook",
+            "description": "Requires continuum.ebooks; provides a Calibre/BookWarehouse ebook backend and request provider."
           },
           {
             "type": "event_consumer.v1",
@@ -498,8 +498,8 @@
           {
             "type": "http_routes.v1",
             "id": "spa",
-            "display_name": "Ebooks portal",
-            "description": "Customer-facing ebooks portal: SPA + OPDS + KOReader kosync + Kobo + Kindle send + admin."
+            "display_name": "Portal: Ebooks",
+            "description": "Ebook portal. Pair with continuum.local-ebooks or continuum.bookwarehouse-ebook for browse/read content."
           },
           {
             "type": "event_consumer.v1",
@@ -646,8 +646,8 @@
           {
             "type": "http_routes.v1",
             "id": "guest-pass",
-            "display_name": "Guest Pass",
-            "description": "Temporary public links for tightly scoped media access."
+            "display_name": "For Continuum media: Guest Pass",
+            "description": "Requires Continuum content/playback routes; creates temporary scoped public links."
           },
           {
             "type": "scheduled_task.v1",
@@ -718,8 +718,8 @@
           {
             "type": "audiobook_backend.v1",
             "id": "local_audiobooks",
-            "display_name": "Local Audiobooks Library",
-            "description": "Scans local audiobook libraries and exposes them to the Audiobooks portal."
+            "display_name": "For Audiobooks: Local Library",
+            "description": "Requires continuum.audiobooks; provides local audiobook catalog, metadata, and streaming."
           },
           {
             "type": "http_routes.v1",
@@ -790,8 +790,8 @@
           {
             "type": "ebook_backend.v1",
             "id": "local_ebooks",
-            "display_name": "Local Ebooks Library",
-            "description": "Scans local ebook, document, and future comic libraries and exposes them to the Ebooks portal.",
+            "display_name": "For Ebooks: Local Library",
+            "description": "Requires continuum.ebooks; provides local ebook catalog, metadata, and file access.",
             "metadata": {
               "ebook_roles": [
                 "library_source"
@@ -874,8 +874,8 @@
           {
             "type": "event_consumer.v1",
             "id": "notification-events",
-            "display_name": "Notification events",
-            "description": "Receives Continuum and plugin events, applies rules, and queues outbound notifications.",
+            "display_name": "Observer: Notifications",
+            "description": "Optional observer; useful with event-producing plugins such as requests, routers, ebooks, and audiobooks.",
             "subscriptions": [
               "continuum.notifications.send",
               "notifications.send",
@@ -984,8 +984,8 @@
           {
             "type": "auth_provider.v1",
             "id": "oidc",
-            "display_name": "Sign in with OIDC",
-            "description": "Generic OIDC authentication. Multi-instance: install once per IdP.",
+            "display_name": "Auth: OIDC Login",
+            "description": "Requires an external OIDC identity provider; adds a Continuum auth provider.",
             "auth_modes": [
               "oauth2"
             ],
@@ -1059,8 +1059,8 @@
           {
             "type": "http_routes.v1",
             "id": "public-catalog",
-            "display_name": "Public Catalog",
-            "description": "Public advertising page with stats, embedded HTML, and signed-token catalog browsing."
+            "display_name": "For Ebooks/Audiobooks: Public Catalog",
+            "description": "Requires configured Ebooks and/or Audiobooks installations to expose public catalog browsing links."
           }
         ],
         "http_routes": [
@@ -1124,8 +1124,8 @@
           {
             "type": "http_routes.v1",
             "id": "requests-ui",
-            "display_name": "Requests",
-            "description": "User-submitted media requests with approval workflow."
+            "display_name": "Portal: Requests",
+            "description": "Movie/TV request portal. Pair with continuum.arrouter or continuum.arrproxy for fulfillment."
           },
           {
             "type": "event_consumer.v1",
@@ -1198,8 +1198,8 @@
           {
             "type": "http_routes.v1",
             "id": "dashboard",
-            "display_name": "Stream Dashboard",
-            "description": "Dashboard for Continuum active streams, playback history, map coverage, and globe view."
+            "display_name": "For active streams: Dashboard",
+            "description": "Requires Continuum playback/session activity; displays active streams and history."
           },
           {
             "type": "scheduled_task.v1",
@@ -1260,8 +1260,8 @@
           {
             "type": "auth_provider.v1",
             "id": "whmcs",
-            "display_name": "Sign in with WHMCS",
-            "description": "OAuth/OIDC auth against a WHMCS billing system.",
+            "display_name": "Auth: WHMCS Login",
+            "description": "Requires a WHMCS instance; adds a Continuum auth provider.",
             "auth_modes": [
               "oauth2"
             ],
