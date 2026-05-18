@@ -14,6 +14,76 @@ and observers around those portals.
 - `continuum.requests` is the movie/TV request portal. It owns request intake,
   quotas, admin approval, and request lifecycle state.
 
+## Dependency Notes
+
+Some catalog entries are not useful as standalone apps. They are backends,
+routers, request providers, auth providers, or observers that attach to a
+portal or to Continuum core.
+
+### Ebook Stack
+
+- `continuum.ebooks` is the portal for ebook browsing, OPDS/Kobo/KOReader,
+  Kindle send, and ebook request workflows.
+- `continuum.local-ebooks` depends on `continuum.ebooks` for user-facing
+  browsing and reading. It supplies a local-library `ebook_backend.v1` and local
+  ebook metadata provider.
+- `continuum.bookwarehouse-ebook` depends on `continuum.ebooks` for
+  user-facing browsing/request handling. It supplies a Calibre/BookWarehouse
+  `ebook_backend.v1` and request provider.
+- `continuum.annas-archive-downloader` depends on `continuum.ebooks` for
+  request intake and status display. It is a download/request fulfillment
+  provider, not a standalone library portal.
+- Install at least one ebook backend with `continuum.ebooks` if users should
+  browse or read content. Typical choices are `continuum.local-ebooks`,
+  `continuum.bookwarehouse-ebook`, or both.
+
+### Audiobook Stack
+
+- `continuum.audiobooks` is the portal for audiobook browsing, playback,
+  Audiobookshelf-compatible routes, and audiobook request workflows.
+- `continuum.local-audiobooks` depends on `continuum.audiobooks` for
+  user-facing browsing and playback. It supplies a local-library
+  `audiobook_backend.v1` and local audiobook metadata provider.
+- `continuum.bookwarehouse-audio` depends on `continuum.audiobooks` for
+  user-facing browsing and playback. It supplies a BookWarehouse
+  `audiobook_backend.v1`.
+- `continuum.audiobookbay-requests` depends on `continuum.audiobooks` for
+  request intake and status display. It is a request fulfillment provider, not a
+  standalone audiobook portal.
+- Install at least one audiobook backend with `continuum.audiobooks` if users
+  should browse or play content. Typical choices are
+  `continuum.local-audiobooks`, `continuum.bookwarehouse-audio`, or both.
+
+### Movie And TV Request Stack
+
+- `continuum.requests` is the request portal for movie and TV intake, quotas,
+  approval, and lifecycle state.
+- `continuum.arrouter` depends on request events from `continuum.requests`. It
+  routes approved requests to one of multiple configured Radarr/Sonarr targets.
+- `continuum.arrproxy` depends on request events from `continuum.requests`. It
+  forwards requests to a simpler single Arr Proxy target.
+- `continuum.arrouter` and `continuum.arrproxy` are alternative fulfillment
+  paths for the same request workflow in most installations. Install one unless
+  you intentionally split routing responsibilities.
+- `continuum.notifications` can observe `continuum.requests`,
+  `continuum.arrouter`, `continuum.arrproxy`, ebook, audiobook, and Continuum
+  events. It is optional but depends on event-producing plugins to do useful
+  work.
+
+### Auth And Public Access
+
+- `continuum.oidc-login` depends on Continuum core auth provider support and an
+  external OIDC identity provider. It does not depend on media plugins.
+- `continuum.whmcs-login` depends on Continuum core auth provider support and a
+  WHMCS instance. It does not depend on media plugins.
+- `continuum.guest-pass` depends on Continuum content/playback routes being
+  available. It is useful alongside media portals but does not provide media by
+  itself.
+- `continuum.public-catalog` depends on configured Ebooks and/or Audiobooks
+  installations when it needs to expose public catalog browsing links.
+- `continuum.stream-dashboard` depends on Continuum playback/session state. It
+  is useful only when Continuum is serving streams.
+
 ## Ebook Flow
 
 1. Users browse or request through `continuum.ebooks`.

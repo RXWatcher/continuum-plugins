@@ -33,23 +33,37 @@ node scripts/validate-catalog.mjs
 
 ## Included Plugins
 
-- `continuum.annas-archive-downloader`
-- `continuum.arrouter`
-- `continuum.arrproxy`
-- `continuum.audiobookbay-requests`
-- `continuum.audiobooks`
-- `continuum.bookwarehouse-audio`
-- `continuum.bookwarehouse-ebook`
-- `continuum.ebooks`
-- `continuum.guest-pass`
-- `continuum.local-audiobooks`
-- `continuum.local-ebooks`
-- `continuum.notifications`
-- `continuum.oidc-login`
-- `continuum.public-catalog`
-- `continuum.requests`
-- `continuum.stream-dashboard`
-- `continuum.whmcs-login`
+- `continuum.ebooks` - ebook portal. Pair with `continuum.local-ebooks`,
+  `continuum.bookwarehouse-ebook`, or another ebook backend.
+- `continuum.local-ebooks` - ebook backend for `continuum.ebooks`.
+- `continuum.bookwarehouse-ebook` - Calibre/BookWarehouse ebook backend and
+  request provider for `continuum.ebooks`.
+- `continuum.annas-archive-downloader` - ebook request/download provider for
+  `continuum.ebooks`.
+- `continuum.audiobooks` - audiobook portal. Pair with
+  `continuum.local-audiobooks`, `continuum.bookwarehouse-audio`, or another
+  audiobook backend.
+- `continuum.local-audiobooks` - audiobook backend for
+  `continuum.audiobooks`.
+- `continuum.bookwarehouse-audio` - BookWarehouse audiobook backend for
+  `continuum.audiobooks`.
+- `continuum.audiobookbay-requests` - audiobook request provider for
+  `continuum.audiobooks`.
+- `continuum.requests` - movie/TV request portal. Pair with one fulfillment
+  router such as `continuum.arrouter` or `continuum.arrproxy`.
+- `continuum.arrouter` - multi-target Radarr/Sonarr request router for
+  `continuum.requests`.
+- `continuum.arrproxy` - single-target Arr Proxy fulfillment path for
+  `continuum.requests`.
+- `continuum.notifications` - optional event observer/delivery plugin for
+  Continuum and plugin events.
+- `continuum.oidc-login` - OIDC auth provider for Continuum login.
+- `continuum.whmcs-login` - WHMCS auth provider for Continuum login.
+- `continuum.guest-pass` - temporary scoped public links for Continuum content.
+- `continuum.public-catalog` - public catalog surface; configure it against
+  Ebooks and/or Audiobooks installations.
+- `continuum.stream-dashboard` - stream/session dashboard for active Continuum
+  playback.
 
 ## Installing In Continuum
 
