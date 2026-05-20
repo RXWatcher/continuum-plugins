@@ -43,7 +43,7 @@ node scripts/validate-catalog.mjs
 - `continuum.local-ebooks` - ebook backend for `continuum.ebooks`.
 - `continuum.bookwarehouse-ebook` - Calibre/BookWarehouse ebook backend and
   request provider for `continuum.ebooks`.
-- `continuum.annas-archive-downloader` - ebook request/download provider for
+- `continuum.ebook-requests` - ebook request/download provider for
   `continuum.ebooks`.
 - `continuum.audiobooks` - audiobook portal. Pair with
   `continuum.local-audiobooks`, `continuum.bookwarehouse-audio`, or another
@@ -52,7 +52,7 @@ node scripts/validate-catalog.mjs
   `continuum.audiobooks`.
 - `continuum.bookwarehouse-audio` - BookWarehouse audiobook backend for
   `continuum.audiobooks`.
-- `continuum.audiobookbay-requests` - audiobook request provider for
+- `continuum.audiobook-requests` - audiobook request provider for
   `continuum.audiobooks`.
 - `continuum.requests` - movie/TV request portal. Pair with one fulfillment
   router such as `continuum.arrouter` or `continuum.arrproxy`.

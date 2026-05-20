@@ -30,7 +30,7 @@ portal or to Continuum core.
 - `continuum.bookwarehouse-ebook` depends on `continuum.ebooks` for
   user-facing browsing/request handling. It supplies a Calibre/BookWarehouse
   `ebook_backend.v1` and request provider.
-- `continuum.annas-archive-downloader` depends on `continuum.ebooks` for
+- `continuum.ebook-requests` depends on `continuum.ebooks` for
   request intake and status display. It is a download/request fulfillment
   provider, not a standalone library portal.
 - Install at least one ebook backend with `continuum.ebooks` if users should
@@ -47,7 +47,7 @@ portal or to Continuum core.
 - `continuum.bookwarehouse-audio` depends on `continuum.audiobooks` for
   user-facing browsing and playback. It supplies a BookWarehouse
   `audiobook_backend.v1`.
-- `continuum.audiobookbay-requests` depends on `continuum.audiobooks` for
+- `continuum.audiobook-requests` depends on `continuum.audiobooks` for
   request intake and status display. It is a request fulfillment provider, not a
   standalone audiobook portal.
 - Install at least one audiobook backend with `continuum.audiobooks` if users
@@ -93,7 +93,7 @@ portal or to Continuum core.
 4. BookWarehouse/Calibre-backed files come from
    `continuum.bookwarehouse-ebook`.
 5. Download/request fulfillment can be delegated to
-   `continuum.annas-archive-downloader` or another selected ebook provider.
+   `continuum.ebook-requests` or another selected ebook provider.
 6. Providers publish acknowledgement, status, fulfilled, or failed events back
    to `continuum.ebooks`.
 
@@ -105,7 +105,7 @@ portal or to Continuum core.
 3. Local files come from `continuum.local-audiobooks`.
 4. BookWarehouse-backed files come from `continuum.bookwarehouse-audio`.
 5. AudiobookBay request fulfillment comes from
-   `continuum.audiobookbay-requests`.
+   `continuum.audiobook-requests`.
 6. Request providers publish queued, downloading, imported, failed, or fulfilled
    status events back to `continuum.audiobooks`.
 

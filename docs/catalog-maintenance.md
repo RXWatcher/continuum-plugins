@@ -81,9 +81,9 @@ For that reason, each catalog entry must keep its first capability
 
 - `Portal: Ebooks`
 - `For Ebooks: Local Library`
-- `For Ebooks: Anna's Archive Downloader`
+- `For Ebooks: Ebook Requests`
 - `Portal: Audiobooks`
-- `For Audiobooks: AudiobookBay Requests`
+- `For Audiobooks: Audiobook Requests`
 - `Portal: Requests`
 - `For Requests: Arr Router`
 - `For Requests: Arr Proxy`

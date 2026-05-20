@@ -2,7 +2,7 @@
   "plugins": [
     {
       "manifest": {
-        "plugin_id": "continuum.annas-archive-downloader",
+        "plugin_id": "continuum.ebook-requests",
         "version": "1.0.0",
         "checksum": "dc89175eb08cbaa30efb47fee70efb68a4802ea8f447d77721bcf3a79f40f635",
         "continuum_api_version": "v1",
@@ -16,7 +16,7 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "For Ebooks: Anna's Archive Downloader",
+            "display_name": "For Ebooks: Ebook Requests",
             "description": "Requires continuum.ebooks for request intake and status display; provides ebook download/request fulfillment."
           },
           {
@@ -31,7 +31,7 @@
           {
             "type": "ebook_backend.v1",
             "id": "default",
-            "display_name": "Anna's Archive Downloader",
+            "display_name": "Ebook Requests",
             "description": "Request/download provider backed by an Anna's Archive download service; not a presentation library source.",
             "metadata": {
               "ebook_roles": [
@@ -59,11 +59,11 @@
           }
         ]
       },
-      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-annas-archive-downloader",
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-ebook-requests",
       "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/checksums.txt",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/plugin-linux-amd64-annas-archive-downloader",
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/plugin-linux-amd64-ebook-requests",
           "checksum": "dc89175eb08cbaa30efb47fee70efb68a4802ea8f447d77721bcf3a79f40f635"
         }
       }
@@ -208,7 +208,7 @@
     },
     {
       "manifest": {
-        "plugin_id": "continuum.audiobookbay-requests",
+        "plugin_id": "continuum.audiobook-requests",
         "version": "1.0.0",
         "checksum": "13ff6b43a5a05e7c5285dae1a235cd3b6221237cee087591292ca4af1896bfd4",
         "continuum_api_version": "v1",
@@ -222,7 +222,7 @@
           {
             "type": "http_routes.v1",
             "id": "backend",
-            "display_name": "For Audiobooks: AudiobookBay Requests",
+            "display_name": "For Audiobooks: Audiobook Requests",
             "description": "Requires continuum.audiobooks for request intake and status display; provides audiobook request fulfillment."
           },
           {
@@ -237,7 +237,7 @@
           {
             "type": "audiobook_backend.v1",
             "id": "default",
-            "display_name": "AudiobookBay Requests",
+            "display_name": "Audiobook Requests",
             "description": "Scraper-based audiobook request provider backed by AudiobookBay with optional qBittorrent enqueueing; not a presentation library source.",
             "metadata": {
               "audiobook_roles": [
@@ -265,11 +265,11 @@
           }
         ]
       },
-      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-audiobookbay-requests",
+      "repo_url": "https://github.com/ContinuumApp/continuum-plugin-audiobook-requests",
       "checksums_url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/checksums.txt",
       "binaries": {
         "linux/amd64": {
-          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/plugin-linux-amd64-audiobookbay-requests",
+          "url": "https://github.com/RXWatcher/continuum-plugins/releases/download/v1.0.0/plugin-linux-amd64-audiobook-requests",
           "checksum": "13ff6b43a5a05e7c5285dae1a235cd3b6221237cee087591292ca4af1896bfd4"
         }
       }
@@ -299,10 +299,10 @@
               "plugin.continuum.bookwarehouse-audio.request_failed",
               "plugin.continuum.bookwarehouse-audio.audiobook_imported",
               "plugin.continuum.bookwarehouse-audio.audiobook_failed",
-              "plugin.continuum.audiobookbay-requests.request_acknowledged",
-              "plugin.continuum.audiobookbay-requests.request_status_changed",
-              "plugin.continuum.audiobookbay-requests.request_fulfilled",
-              "plugin.continuum.audiobookbay-requests.request_failed"
+              "plugin.continuum.audiobook-requests.request_acknowledged",
+              "plugin.continuum.audiobook-requests.request_status_changed",
+              "plugin.continuum.audiobook-requests.request_fulfilled",
+              "plugin.continuum.audiobook-requests.request_failed"
             ]
           },
           {
@@ -506,10 +506,10 @@
             "id": "request_watcher",
             "display_name": "Watch backend request events",
             "subscriptions": [
-              "plugin.continuum.annas-archive-downloader.request_acknowledged",
-              "plugin.continuum.annas-archive-downloader.request_failed",
-              "plugin.continuum.annas-archive-downloader.request_status_changed",
-              "plugin.continuum.annas-archive-downloader.request_fulfilled",
+              "plugin.continuum.ebook-requests.request_acknowledged",
+              "plugin.continuum.ebook-requests.request_failed",
+              "plugin.continuum.ebook-requests.request_status_changed",
+              "plugin.continuum.ebook-requests.request_fulfilled",
               "plugin.continuum.bookwarehouse-ebook.request_acknowledged",
               "plugin.continuum.bookwarehouse-ebook.request_failed",
               "plugin.continuum.bookwarehouse-ebook.request_status_changed",
@@ -911,10 +911,10 @@
               "plugin.continuum.bookwarehouse-ebook.request_status_changed",
               "plugin.continuum.bookwarehouse-ebook.request_fulfilled",
               "plugin.continuum.bookwarehouse-ebook.request_failed",
-              "plugin.continuum.annas-archive-downloader.request_acknowledged",
-              "plugin.continuum.annas-archive-downloader.request_status_changed",
-              "plugin.continuum.annas-archive-downloader.request_fulfilled",
-              "plugin.continuum.annas-archive-downloader.request_failed",
+              "plugin.continuum.ebook-requests.request_acknowledged",
+              "plugin.continuum.ebook-requests.request_status_changed",
+              "plugin.continuum.ebook-requests.request_fulfilled",
+              "plugin.continuum.ebook-requests.request_failed",
               "plugin.continuum.ebookdb.request_acknowledged",
               "plugin.continuum.ebookdb.request_status_changed",
               "plugin.continuum.ebookdb.request_fulfilled",
